@@ -1,0 +1,7 @@
+1. Build Aethra-Calcite library into jar
+2. Add this JAR manually as a module library for the AethraDB-Planner-Lib project in intellij
+3. Build class files from Intellij IDEA (simply push the build icon)
+4. Using (adapted version of) the command in native-image-config-command.txt to get the native-image profile databind
+5. Build the native image using (adapted version of) the command in native-image-creation-command-hacked-calcite.txt
+
+Adaptations to the commands above mean updating the class path, which can be extracted from the console output of the 3rd step in intellij idea.

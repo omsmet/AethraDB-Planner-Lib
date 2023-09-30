@@ -17,6 +17,11 @@ import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
+import org.graalvm.nativeimage.IsolateThread;
+import org.graalvm.nativeimage.c.function.CEntryPoint;
+import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CTypeConversion;
+import org.graalvm.word.Pointer;
 import util.arrow.ArrowSchemaBuilder;
 
 import java.io.BufferedReader;
@@ -24,7 +29,6 @@ import java.io.FileReader;
 import java.io.PrintWriter;
 
 public class PlannerEntryPoint {
-
 
     private final static HepPlanner aethraHepPlanner;
 
@@ -44,12 +48,14 @@ public class PlannerEntryPoint {
         aethraHepPlanner = new HepPlanner(hepProgramBuilder.build());
     }
 
-    public static void main(String[] args) throws Exception {
-        if (args.length != 2)
-            throw new IllegalArgumentException("You need to supply the database path and the query file as arguments.");
+    @CEntryPoint(name = "Java_AethraDB_AethraDB_plan")
+    public static JNIEnv.JString plan(JNIEnv jniEnv, Pointer clazz, IsolateThread isolateThread, JNIEnv.JString rawDatabasePath, JNIEnv.JString rawQueryPath) throws Exception {
+        JNIEnv.JNINativeInterface fn = jniEnv.getFunctions();
+        CCharPointer cDatabasePathPointer = fn.getGetStringUTFChars().call(jniEnv, rawDatabasePath, (byte) 0);
+        String databasePath = CTypeConversion.toJavaString(cDatabasePathPointer);
 
-        String databasePath = args[0];
-        String queryPath = args[1];
+        CCharPointer cQueryPathPointer = fn.getGetStringUTFChars().call(jniEnv, rawQueryPath, (byte) 0);
+        String queryPath = CTypeConversion.toJavaString(cQueryPathPointer);
 
         // Read the schema from disk
         JavaTypeFactoryImpl typeFactory = new JavaTypeFactoryImpl();
@@ -81,6 +87,16 @@ public class PlannerEntryPoint {
 
         // Close the planner
         queryPlanner.close();
+
+        // Return the optimised query to the caller
+        final String testResult = "Test blabla";
+
+        try (final CTypeConversion.CCharPointerHolder holder = CTypeConversion.toCString(testResult)) {
+            return fn.getNewStringUTF().call(jniEnv, holder.get());
+        }
     }
+
+    @CEntryPoint(name = "Java_AethraDB_AethraDB_createIsolate", builtin=CEntryPoint.Builtin.CREATE_ISOLATE)
+    public static native IsolateThread createIsolate();
 
 }

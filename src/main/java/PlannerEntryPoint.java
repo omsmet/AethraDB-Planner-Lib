@@ -46,7 +46,7 @@ public class PlannerEntryPoint {
         aethraHepPlanner = new HepPlanner(hepProgramBuilder.build());
     }
 
-    @CEntryPoint(name = "Java_AethraDB_AethraDB_plan")
+    @CEntryPoint(name = "Java_AethraDB_util_AethraDatabase_plan")
     public static JNIEnv.JString plan(JNIEnv jniEnv, Pointer clazz, IsolateThread isolateThread, JNIEnv.JString rawDatabasePath, JNIEnv.JString rawQueryPath) throws Exception {
         JNIEnv.JNINativeInterface fn = jniEnv.getFunctions();
         CCharPointer cDatabasePathPointer = fn.getGetStringUTFChars().call(jniEnv, rawDatabasePath, (byte) 0);
@@ -63,7 +63,7 @@ public class PlannerEntryPoint {
         }
     }
 
-    @CEntryPoint(name = "Java_AethraDB_AethraDB_createIsolate", builtin=CEntryPoint.Builtin.CREATE_ISOLATE)
+    @CEntryPoint(name = "Java_AethraDB_util_AethraDatabase_createIsolate", builtin=CEntryPoint.Builtin.CREATE_ISOLATE)
     public static native IsolateThread createIsolate();
 
     private static String internalPlan(String databasePath, String queryPath) throws Exception {

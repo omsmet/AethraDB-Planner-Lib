@@ -8,9 +8,9 @@
 extern "C" {
 #endif
 
-graal_isolatethread_t* Java_AethraDB_AethraDB_createIsolate();
+graal_isolatethread_t* Java_AethraDB_util_AethraDatabase_createIsolate();
 
-void * Java_AethraDB_AethraDB_plan(struct JNIEnv_*, size_t, graal_isolatethread_t*, void *, void *);
+void * Java_AethraDB_util_AethraDatabase_plan(struct JNIEnv_*, size_t, graal_isolatethread_t*, void *, void *);
 
 #if defined(__cplusplus)
 }

@@ -7,12 +7,10 @@ import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.prepare.PlannerImpl;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.externalize.RelWriterImpl;
 import org.apache.calcite.rel.rules.AggregateReduceFunctionsRule;
 import org.apache.calcite.rel.rules.FilterJoinRule;
 import org.apache.calcite.rel.rules.ProjectJoinTransposeRule;
 import org.apache.calcite.rel.rules.ProjectRemoveRule;
-import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.tools.FrameworkConfig;
@@ -22,11 +20,11 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.Pointer;
+import util.arrow.AethraQueryEncoder;
 import util.arrow.ArrowSchemaBuilder;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.PrintWriter;
 
 public class PlannerEntryPoint {
 
@@ -57,6 +55,18 @@ public class PlannerEntryPoint {
         CCharPointer cQueryPathPointer = fn.getGetStringUTFChars().call(jniEnv, rawQueryPath, (byte) 0);
         String queryPath = CTypeConversion.toJavaString(cQueryPathPointer);
 
+        final String aethraPlan = internalPlan(databasePath, queryPath);
+
+        // Return the optimised query to the caller
+        try (final CTypeConversion.CCharPointerHolder holder = CTypeConversion.toCString(aethraPlan)) {
+            return fn.getNewStringUTF().call(jniEnv, holder.get());
+        }
+    }
+
+    @CEntryPoint(name = "Java_AethraDB_AethraDB_createIsolate", builtin=CEntryPoint.Builtin.CREATE_ISOLATE)
+    public static native IsolateThread createIsolate();
+
+    private static String internalPlan(String databasePath, String queryPath) throws Exception {
         // Read the schema from disk
         JavaTypeFactoryImpl typeFactory = new JavaTypeFactoryImpl();
         CalciteSchema databaseSchema = ArrowSchemaBuilder.fromDirectory(databasePath, typeFactory);
@@ -81,22 +91,14 @@ public class PlannerEntryPoint {
         aethraHepPlanner.setRoot(queryRoot);
         RelNode optimisedQuery = aethraHepPlanner.findBestExp();
 
-        // Output the optimised query
-        var relWriter = new RelWriterImpl(new PrintWriter(System.out, true), SqlExplainLevel.NON_COST_ATTRIBUTES, false);
-        optimisedQuery.explain(relWriter);
+        // Translate the query plan to the Aethra Engine Plan Format
+        final String aethraPlan = AethraQueryEncoder.encode(optimisedQuery);
 
         // Close the planner
         queryPlanner.close();
 
-        // Return the optimised query to the caller
-        final String testResult = "Test blabla";
-
-        try (final CTypeConversion.CCharPointerHolder holder = CTypeConversion.toCString(testResult)) {
-            return fn.getNewStringUTF().call(jniEnv, holder.get());
-        }
+        // Return the result
+        return aethraPlan;
     }
-
-    @CEntryPoint(name = "Java_AethraDB_AethraDB_createIsolate", builtin=CEntryPoint.Builtin.CREATE_ISOLATE)
-    public static native IsolateThread createIsolate();
 
 }

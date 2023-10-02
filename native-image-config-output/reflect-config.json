@@ -672,12 +672,12 @@
 },
 {
   "name":"org.apache.calcite.sql2rel.RelStructuredTypeFlattener",
-  "methods":[{"name":"rewriteRel","parameterTypes":["org.apache.calcite.rel.core.TableScan"] }, {"name":"rewriteRel","parameterTypes":["org.apache.calcite.rel.logical.LogicalAggregate"] }, {"name":"rewriteRel","parameterTypes":["org.apache.calcite.rel.logical.LogicalFilter"] }, {"name":"rewriteRel","parameterTypes":["org.apache.calcite.rel.logical.LogicalProject"] }, {"name":"rewriteRel","parameterTypes":["org.apache.calcite.rel.logical.LogicalTableScan"] }]
+  "methods":[{"name":"rewriteRel","parameterTypes":["org.apache.calcite.rel.core.TableScan"] }, {"name":"rewriteRel","parameterTypes":["org.apache.calcite.rel.logical.LogicalAggregate"] }, {"name":"rewriteRel","parameterTypes":["org.apache.calcite.rel.logical.LogicalFilter"] }, {"name":"rewriteRel","parameterTypes":["org.apache.calcite.rel.logical.LogicalJoin"] }, {"name":"rewriteRel","parameterTypes":["org.apache.calcite.rel.logical.LogicalProject"] }, {"name":"rewriteRel","parameterTypes":["org.apache.calcite.rel.logical.LogicalTableScan"] }]
 },
 {
   "name":"org.apache.calcite.sql2rel.StandardConvertletTable",
   "queryAllPublicMethods":true,
-  "methods":[{"name":"convertCall","parameterTypes":["org.apache.calcite.sql2rel.SqlRexContext","org.apache.calcite.sql.SqlCall"] }]
+  "methods":[{"name":"convertBetween","parameterTypes":["org.apache.calcite.sql2rel.SqlRexContext","org.apache.calcite.sql.fun.SqlBetweenOperator","org.apache.calcite.sql.SqlCall"] }, {"name":"convertCall","parameterTypes":["org.apache.calcite.sql2rel.SqlRexContext","org.apache.calcite.sql.SqlCall"] }]
 },
 {
   "name":"sun.misc.Unsafe",
